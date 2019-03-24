@@ -38,7 +38,7 @@ import android.widget.TabHost;
 import android.widget.Toast;
 
 import com.maintabs_d_secondpages.HelpActivity;
-import xin.skingorz.isafety.webSocketService;
+
 
 import static com.jack.sqlite.UserBean.phoneNumber;
 
@@ -113,10 +113,9 @@ public class MainTabActivity extends TabActivity implements OnCheckedChangeListe
             case R.id.homepage:
                 resetSprfMain();
                 Intent intent=new Intent(MainTabActivity.this,LoginActivity.class);
-                startActivity(intent);
-                Intent stop = new Intent(MainTabActivity.this, webSocketService.class);
-                stopService(stop);
+
                 MainTabActivity.this.finish();
+                startActivity(intent);
                 break;
 
             case R.id.help:
@@ -125,7 +124,7 @@ public class MainTabActivity extends TabActivity implements OnCheckedChangeListe
                 break;
 
             case R.id.feedback:
-                Intent intent3=new Intent(MainTabActivity.this,HelpActivity.class);
+                Intent intent3=new Intent(MainTabActivity.this,NoticeActivity.class);
                 startActivity(intent3);
                 break;
         }

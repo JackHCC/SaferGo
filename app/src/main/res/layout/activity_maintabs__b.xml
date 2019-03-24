@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Maintabs_BActivity">
 
 
@@ -15,10 +16,22 @@
             android:id="@+id/protect"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:background="@mipmap/safergo"
-            android:layout_marginTop="400dp"
-            android:layout_marginLeft="30dp" />
+            android:background="@drawable/shape_yuan"
+            android:layout_marginTop="415dp"
+            android:text="导航"
+            android:textColor="@color/white"
+            android:layout_marginLeft="95dp" />
 
+        <Button
+            android:id="@+id/daohang"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="415dp"
+            android:layout_marginLeft="15dp"
+            android:text="守护"
+            android:textColor="@color/white"
+            android:background="@drawable/shape_yuan">
+        </Button>
 
 
     </com.amap.api.maps.MapView>

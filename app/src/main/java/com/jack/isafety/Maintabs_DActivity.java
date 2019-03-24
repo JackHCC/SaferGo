@@ -21,15 +21,27 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jack.sqlite.DBUtils;
 import com.maintabs_d_secondpages.HelpActivity;
 import com.maintabs_d_secondpages.WolfLightActivity;
 import com.miantabs_d_share.BottomDialog;
 import com.miantabs_d_share.EditTextDialog;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 
-import xin.skingorz.isafety.GlobalVariable;
-import xin.skingorz.isafety.User;
+import es.dmoral.toasty.Toasty;
+import io.socket.emitter.Emitter;
+import xin.skingorz.Bean.User;
+import xin.skingorz.internet.Search;
+import xin.skingorz.utils.GlobalVariable;
 
+import static com.jack.service.BaseService.mSocket;
+import static com.jack.sqlite.UserBean.email;
+import static com.jack.sqlite.UserBean.id;
+import static com.jack.sqlite.UserBean.userName;
 
 @SuppressLint("SdCardPath")
 public class Maintabs_DActivity extends AppCompatActivity/*implements OnClickListener*/ {
@@ -73,6 +85,11 @@ public class Maintabs_DActivity extends AppCompatActivity/*implements OnClickLis
 
 
 
+        mSocket.emit("userEmail","");
+
+        mSocket.on("userEmail",getEmail);
+
+
         mContext = this;
         //imageView = (ImageView) findViewById(R.id.shangchuan_img);
         textView = (TextView) findViewById(R.id.chazhi_tv);
@@ -94,13 +111,29 @@ public class Maintabs_DActivity extends AppCompatActivity/*implements OnClickLis
         mUsername=findViewById(R.id.maintabs_d_header_title);
         mUseremail=findViewById(R.id.maintabs_d_header_number);
 
-        User user= (User) GlobalVariable.cache.getDataFromMemotyCache("user");
+        //mUsername.setText(userName);
 
-        String rUsername=user.getUsername();
-        String rUseremail=user.getEmail();
 
-        mUsername.setText(rUsername);
-        mUseremail.setText(rUseremail);
+        //获取信息
+        /*Search search=new Search();
+
+        JSONObject jsonObject= null;
+        try {
+            jsonObject = search.user(userName);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        String rUseremail= null;
+        try {
+            rUseremail = jsonObject.getString("email");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }*/
+
+
+
+
 
         LinearLayout btn_call=findViewById(R.id.maintabs_d_body_body_2);
 
@@ -236,6 +269,55 @@ public class Maintabs_DActivity extends AppCompatActivity/*implements OnClickLis
     }
 
 
+    private Emitter.Listener getEmail = new Emitter.Listener() {
+
+
+        @Override
+        public void call(Object... args) {
+            //主线程调用
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    JSONObject data = null;
+                    try {
+                        data = new JSONObject((String)args[0]);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+
+                        email = data.getString("email");
+                        userName=data.getString("username");
+                        //Toast.makeText(LoginActivity.this,status+msg, Toast.LENGTH_SHORT).show();
+                        setUseremail(email);
+                        setUsername(userName);
+
+                        mUseremail.setText(email);
+                        mUsername.setText(userName);
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
+
+
+    private void setUseremail(String email) {
+        //更新数据库字段
+        DBUtils.getInstance(this).updateUserInfo("email", email, id);
+    }
+
+    private void setUsername(String name) {
+        //更新数据库字段
+        DBUtils.getInstance(this).updateUserInfo("userName", name, id);
+    }
+
+
     /**页面跳转*/
     //页面跳转函数
     private void setListeners(){
@@ -262,7 +344,9 @@ public class Maintabs_DActivity extends AppCompatActivity/*implements OnClickLis
             Intent intent=null;
             switch (v.getId()){
                 case R.id.maintabs_d_body_footer_2:
+                    Toasty.success(Maintabs_DActivity.this, "获取帮助!", Toast.LENGTH_SHORT, true).show();
                     intent=new Intent(Maintabs_DActivity.this,HelpActivity.class);
+
                     break;
                 case R.id.maintabs_d_body_header_3:
                     intent=new Intent(Maintabs_DActivity.this,SettingActivity.class);

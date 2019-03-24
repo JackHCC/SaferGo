@@ -39,6 +39,10 @@ import com.nightonke.boommenu.BoomButtons.OnBMClickListener;
 import com.nightonke.boommenu.BoomMenuButton;
 import com.nightonke.boommenu.Util;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,13 +54,26 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import xin.skingorz.isafety.GlobalVariable;
-import xin.skingorz.isafety.User;
-import xin.skingorz.isafety.getFriend;
+import es.dmoral.toasty.Toasty;
+import io.socket.emitter.Emitter;
+import xin.skingorz.Bean.User;
+import xin.skingorz.internet.Search;
+import xin.skingorz.internet.UpdataUser;
+import xin.skingorz.utils.GlobalVariable;
 
+
+import static com.jack.service.BaseService.mSocket;
+import static com.jack.sqlite.UserBean.Friend;
+import static com.jack.sqlite.UserBean.home;
+import static com.jack.sqlite.UserBean.id;
+import static com.jack.sqlite.UserBean.location;
 import static com.jack.sqlite.UserBean.messageText;
 import static com.jack.sqlite.UserBean.currentLocation;
+import static com.jack.sqlite.UserBean.phone;
 import static com.jack.sqlite.UserBean.phoneNumber;
+import static com.jack.sqlite.UserBean.sex;
+import static com.jack.sqlite.UserBean.signature;
+import static com.jack.sqlite.UserBean.userName;
 
 public class Maintabs_AActivity extends AppCompatActivity implements View.OnClickListener,View.OnLongClickListener{
 
@@ -76,7 +93,7 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
     public static File tempFile;
 
 
-    private User[] userArrary;
+    private UpdataUser updataUser=new UpdataUser();
 
     //小功能部件
     private LinearLayout Header_Dial;
@@ -87,18 +104,23 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
     private TextView Header_Show;
     private TextView Body_Show;
 
+    private JSONArray jsonArray;
 
 
-    User user= (User) GlobalVariable.cache.getDataFromMemotyCache("user");
-    String rUsername=user.getUsername();
-    private String spUserName=rUsername;
+    String email;
+
+    String rUsername;
+    String spUserName=id;
+    //获取信息
+    //Search search=new Search();
+
+    public Maintabs_AActivity() throws InterruptedException, JSONException {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maintabs__a);
-
-
 
 
         mContext=this;
@@ -109,6 +131,15 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
 
         //初始化数据
         initDate();
+
+        Map<String,String> map=new HashMap<String, String>();
+        map.put("search",userName);
+
+        net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+        mSocket.emit("getInfor",jsonObject);
+
+        mSocket.on("searchResult",getInformation);
 
         //录像与相机点击按钮
         Header_takePhoto.setOnClickListener(this);
@@ -152,40 +183,66 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
         /**listview相关*/
 
         int[] Listview_item_logo = new int[]{
-                R.mipmap.isafety, R.drawable.protect, R.color.main_color_darkblue, R.color.main_color_darkgreen, R.color.main_color_red, R.color.main_color_pink,
-
+                R.mipmap.safergo/*, R.drawable.protect, R.color.main_color_darkblue, R.color.main_color_darkgreen, R.color.main_color_red, R.color.main_color_pink,
+*/
         };
-        String[] Listview_item_title;
-        String[] Listview_item_email;
+        String[] Listview_item_title=new String[]{
+                "jack"
+        };
+        String[] Listview_item_email = new String[]{
+                "2508074836@qq.com"
+        };
 
 
-        //获取好友
-        Callable<User[]> callable1 = new getFriend();
-        FutureTask<User[]> futureTask1 = new FutureTask<User[]>(callable1);
-        new Thread(futureTask1).start();
-        while (!futureTask1.isDone()) {
+
+        List<Map<String,Object>> List_item=new ArrayList<Map<String,Object>>();
+        for(int i=0;i<Listview_item_logo.length;i++){
+            Map<String,Object> map1=new HashMap<String, Object>();
+            map1.put("main_listview_item_logo",Listview_item_logo[i]);
+            map1.put("main_listview_item_title",Listview_item_title[i]);
+            map1.put("main_listview_item_email",Listview_item_email[i]);
+            List_item.add(map1);
+        }
+
+        //配置适配器
+        SimpleAdapter adapter=new SimpleAdapter(this,List_item, R.layout.maintabs_a_listview_item,new String[]{"main_listview_item_logo","main_listview_item_title","main_listview_item_email"},
+                new int[]{R.id.main_listview_item_logo, R.id.main_listview_item_title,R.id.main_listview_item_id});
+        ListView mMain_listview=findViewById(R.id.maintabs_a_listview);
+        mMain_listview.setAdapter(adapter);
+
+        //监听点击
+        mMain_listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Map<String,Object> map= (Map<String, Object>) parent.getItemAtPosition(position);
+                Toast.makeText(Maintabs_AActivity.this, map.get("main_listview_item_title").toString(), Toast.LENGTH_SHORT).show();
+
+                //onBackPressed();
+
+                /*switch (position){
+                    case 0:
+
+                        break;
+                }*/
+
+            }
+        });
+
+
+        /*mSocket.emit("GetFriend");
+
+        mSocket.on("allFriends",FriendLister);
+
+
+        for (int i = 0; i < Friend.length(); i++) {
+            //Listview_item_title = new String[userArrary.length];
+            //Listview_item_title[i] = userArrary[i].getUsername();
+
             try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
+                Listview_item_email[i]= ((JSONObject) UserBean.Friend.get(i)).getString("friends_email");
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-        try {
-            userArrary = futureTask1.get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        //Log.i("getlength", String.valueOf(userArrary != null));
-
-
-        for (int i = 0; i < userArrary.length; i++) {
-            Listview_item_title = new String[userArrary.length];
-            Listview_item_email = new String[userArrary.length];
-            Listview_item_title[i] = userArrary[i].getUsername();
-            Listview_item_email[i] = userArrary[i].getEmail();
         }
 
 
@@ -193,17 +250,17 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
         //素材数组的构建
 
         List<Map<String, Object>> List_item = new ArrayList<Map<String, Object>>();
-        for (int i = 0; i < userArrary.length; i++) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("main_listview_item_logo", Listview_item_logo[i]);
-            map.put("main_listview_item_title", userArrary[i].getUsername());
-            map.put("main_listview_item_email", userArrary[i].getEmail());
-            List_item.add(map);
+        for (int i = 0; i < Friend.length(); i++) {
+            Map<String, Object> map2 = new HashMap<String, Object>();
+            map2.put("main_listview_item_logo", Listview_item_logo[i]);
+            //map.put("main_listview_item_title", userArrary[i].getUsername());
+            map2.put("main_listview_item_email", Listview_item_email[i]);
+            List_item.add(map2);
         }
 
         //配置适配器
-        SimpleAdapter adapter = new SimpleAdapter(this, List_item, R.layout.maintabs_a_listview_item, new String[]{"main_listview_item_logo", "main_listview_item_title", "main_listview_item_email"},
-                new int[]{R.id.main_listview_item_logo, R.id.main_listview_item_title, R.id.main_listview_item_id});
+        SimpleAdapter adapter = new SimpleAdapter(this, List_item, R.layout.maintabs_a_listview_item, new String[]{"main_listview_item_logo", *//*"main_listview_item_title", *//*"main_listview_item_email"},
+                new int[]{R.id.main_listview_item_logo, *//*R.id.main_listview_item_title,*//* R.id.main_listview_item_id});
         ListView mMain_listview = findViewById(R.id.maintabs_a_listview);
         mMain_listview.setAdapter(adapter);
 
@@ -212,17 +269,16 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Map<String, Object> map = (Map<String, Object>) parent.getItemAtPosition(position);
-                Toast.makeText(Maintabs_AActivity.this, map.get("main_listview_item_title").toString(), Toast.LENGTH_SHORT).show();
+                Toasty.info(Maintabs_AActivity.this,  "好友守护", Toast.LENGTH_SHORT, true).show();
+                *//*Intent intent=new Intent(Maintabs_AActivity.this, com.elabs.android.chatview.MainActivity.class);
+                startActivity(intent);*//*
 
-                /*Intent intent=new Intent(Maintabs_AActivity.this, com.elabs.android.chatview.MainActivity.class);
-                startActivity(intent);*/
-
-                /*for(int i=0;i<userArrary.length;i++){
+                *//*for(int i=0;i<Friend.length();i++){
 
                     if (position)
                     position=i;
-                    String name=userArrary[i].getUsername();
-                    String email=userArrary[i].getEmail();
+                    //String name=Friend[i].getUsername();
+                    String email=Listview_item_email[i];
                     Intent intent=new Intent(Maintabs_AActivity.this,com.elabs.android.chatview.MainActivity.class);
                     Bundle bundle=new Bundle();
                     bundle.putString("name",name);
@@ -230,7 +286,7 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
                     intent.putExtras(bundle);
                     startActivity(intent);
 
-                }*/
+                }*//*
                 switch (position) {
                     case 0:
                         //GlobalVariable.handle.sendPeople(userArrary[0].getEmail());
@@ -238,7 +294,7 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
                 }
 
             }
-        });
+        });*/
 
 
 
@@ -296,13 +352,92 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
                 .normalImageRes(R.drawable.maintabs_a_share)
                 .imageRect(new Rect(35, 30, Util.dp2px(50), Util.dp2px(50)))
                 .normalText("分享守护！")
-                .subNormalText("让更多的人来守护你这个小可爱吧～");
+                .subNormalText("让更多的人来守护你这个小可爱吧～")
+                .listener(new OnBMClickListener() {
+                    @Override
+                    public void onBoomButtonClick(int index) {
+                        // When the boom-button corresponding this builder is clicked.
+                        Toast.makeText(Maintabs_AActivity.this, "SaferGo", Toast.LENGTH_SHORT).show();
+                    }
+                });
         bmb.addBuilder(builder4);
 
 
 
     }
 
+
+
+    private Emitter.Listener FriendLister = new Emitter.Listener() {
+
+
+        @Override
+        public void call(Object... args) {
+            //主线程调用
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    JSONObject data = null;
+                    try {
+                        data = new JSONObject((String)args[0]);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        /*phoneNumber ="";
+                        messageText = "SaferGo官方短信：您的好友发生突发情况，需要您的帮助!";
+                        currentLocation = "发生情况位置为：北京市朝阳区";*/
+
+                        Friend= data.getJSONArray("friend");
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener getInformation = new Emitter.Listener() {
+
+
+        @Override
+        public void call(Object... args) {
+            //主线程调用
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    JSONObject data = null;
+                    try {
+                        data = new JSONObject((String)args[0]);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        /*phoneNumber ="";
+                        messageText = "SaferGo官方短信：您的好友发生突发情况，需要您的帮助!";
+                        currentLocation = "发生情况位置为：北京市朝阳区";*/
+
+                        phoneNumber = data.getString("emergencyPhone");
+                        messageText = data.getString("msgTemplate");
+
+
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
 
     //点击重写
     @Override
@@ -338,12 +473,12 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
     private void initDate() {
         UserBean bean = null;
         //实例化DBUtils，同时调用其方法获取个人信息资料
-        bean = DBUtils.getInstance(this).getUserInfo(spUserName);
+        //bean = DBUtils.getInstance(this).getUserInfo(spUserName);
+        bean = DBUtils.getInstance(this).getUserInfo("username");
         //如果第一次进入，数据库没有保留用户信息
         if (bean == null) {
             bean = new UserBean();
-            bean.userName = rUsername;
-            bean.phoneNumber ="";
+            bean.userName = "name";
             bean.messageText = "SaferGo官方短信：您的好友发生突发情况，需要您的帮助!";
             bean.currentLocation = "发生情况位置为：北京市朝阳区";
 
@@ -568,11 +703,16 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
                                 "内容不能为空！" + input, Toast.LENGTH_LONG).show();
                     } else {
                         if (StringUtils.checkPhoneNumber(inputStr)) {
-                            //currentUser.setMobilePhoneNumber(inputStr);
-                            //phoneCL.setRightText(inputStr);
-                            //doUpdate();
-                            /*设置上传服务器*/
-                            //mUser_phone.setText(inputStr);
+
+                            //上传服务器
+                            Map<String,String> map=new HashMap<String, String>();
+                            map.put("emergencyPhone",inputStr);
+
+                            net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                            mSocket.emit("SetInfor",jsonObject);
+
+
                             phoneNumber=inputStr;
                             setPhoneNumber(phoneNumber);
 
@@ -609,10 +749,14 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
                                 "内容不能为空！" + input, Toast.LENGTH_LONG).show();
                     } else {
 
-                        //currentUser.setMobilePhoneNumber(inputStr);
-                        //phoneCL.setRightText(inputStr);
-                        //doUpdate();
                         /*设置上传服务器*/
+                        Map<String,String> map=new HashMap<String, String>();
+                        map.put("msgTemplate",inputStr);
+
+                        net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                        mSocket.emit("SetInfor",jsonObject);
+
                         messageText=inputStr;
                         setMessageText(messageText);
                     }

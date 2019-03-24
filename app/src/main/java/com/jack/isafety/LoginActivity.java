@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,21 +24,32 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jack.service.BaseService;
+import com.jack.sqlite.DBUtils;
 import com.link.isafe.JellyInterpolator;
 import com.wang.avi.AVLoadingIndicatorView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
-import xin.skingorz.isafety.GlobalVariable;
-import xin.skingorz.isafety.Login;
-import xin.skingorz.isafety.User;
-import xin.skingorz.isafety.returnMsg;
-import xin.skingorz.isafety.webSocketService;
 
+import es.dmoral.toasty.Toasty;
+import io.socket.emitter.Emitter;
+import xin.skingorz.Bean.User;
+import xin.skingorz.internet.Login;
+import xin.skingorz.utils.Encryption;
+import xin.skingorz.utils.GlobalVariable;
+
+
+import static com.jack.service.BaseService.mSocket;
+import static com.jack.sqlite.UserBean.userName;
+import static com.jack.sqlite.UserBean.id;
 
 public class LoginActivity extends Activity implements View.OnClickListener {
 
@@ -61,8 +73,8 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
     private String userNameValue,passwordValue;
 
-    //SharedPreferences sprfMain;
-    //SharedPreferences.Editor editorMain;
+    private Encryption encryption = new Encryption();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,15 +82,9 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
 
-        /*  //在加载布局文件前判断是否登陆过
-        sprfMain= PreferenceManager.getDefaultSharedPreferences(this);
-        editorMain=sprfMain.edit();
-        //.getBoolean("main",false)；当找不到"main"所对应的键值是默认返回false
-        if(sprfMain.getBoolean("main",false)){
-        Intent intent=new Intent(LoginActivity.this,MainTabActivity.class);
-        startActivity(intent);
-        LoginActivity.this.finish();        }
-        */
+
+        //打开服务
+        createServiceClick();
 
         //跳转注册页面
         TextView mLogin_Register = findViewById(R.id.mlogin_register);
@@ -112,7 +118,16 @@ public class LoginActivity extends Activity implements View.OnClickListener {
             }
         });
 
+
+
+
+
         initView();
+
+        //数据库ｕｓｅｒｎａｍｅ更新
+        /*userName=mUsername.getText().toString();
+        setUsername(userName);*/
+
         stopAnim();
 
         //记住密码，自动登录
@@ -174,6 +189,14 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
 
 
+
+    }
+
+    //创建服务函数
+    public void createServiceClick(){
+        Intent intent = new Intent(this, BaseService.class);
+        //启动servicce服务
+        startService(intent);
     }
 
 
@@ -203,90 +226,115 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         mUsername = findViewById(R.id.input_layout_name_edit);
         mPassword = findViewById(R.id.input_layout_psw_edit);
 
+
         //登陆点击
         mBtnLogin.setOnClickListener(new View.OnClickListener() {
-            //String username=mUsername.getText().toString();
-            //String password=mPassword.getText().toString();
-
 
             @Override
             public void onClick(View v) {
 
-                //Log.i("usertext",mUsername.getText().toString());
-                Callable<returnMsg> callable = new Login(mUsername.getText().toString(), mPassword.getText().toString());
-                FutureTask<returnMsg> futureTask = new FutureTask<returnMsg>(callable);
-                new Thread(futureTask).start();
-                while (!futureTask.isDone()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+                //记住密码
+
+                userNameValue =mUsername.getText().toString();
+
                 try {
-                    returnMsg returnMsg = futureTask.get();
-                    Log.i("returnMsg", returnMsg.getMsg());
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
+                    passwordValue = encryption.sha1(mPassword.getText().toString());
+                } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
 
-                if (returnMsg.getStatus() == 200) {
-
-                    // 计算出控件的高与宽
-                    mWidth = mBtnLogin.getMeasuredWidth();
-                    mHeight = mBtnLogin.getMeasuredHeight();
-
-                    // 隐藏输入框
-                    mName.setVisibility(View.INVISIBLE);
-                    mPsw.setVisibility(View.INVISIBLE);
-
-                    //记住密码
-                    userNameValue =mUsername.getText().toString();
-                    passwordValue =mPassword.getText().toString();
-
-                    Toast.makeText(LoginActivity.this,"登录成功", Toast.LENGTH_SHORT).show();
-
-                    //登录成功和记住密码框为选中状态才保存用户信息
-                    if(rem_pw.isChecked())
-                    {
-                        //记住用户名、密码、
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.putString("USER_NAME", userNameValue);
-                        editor.putString("PASSWORD",passwordValue);
-                        editor.commit();
-                    }
-
-                    //跳转界面
-                    inputAnimator(mInputLayout, mWidth, mHeight);
-
-                    Callable<User> callable1 = new User(mUsername.getText().toString());
-                    FutureTask<User> futureTask1 = new FutureTask<User>(callable1);
-                    new Thread(futureTask1).start();
-                    while (!futureTask.isDone()) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    try {
-                        User user = futureTask1.get();
-                        GlobalVariable.cache.addDataMemoryCache("user",user);
-
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                } else {
-                    Toast.makeText(LoginActivity.this, returnMsg.getMsg(), Toast.LENGTH_SHORT).show();
+                //登录成功和记住密码框为选中状态才保存用户信息
+                if(rem_pw.isChecked())
+                {
+                    //记住用户名、密码、
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString("USER_NAME", userNameValue);
+                    editor.putString("PASSWORD",passwordValue);
+                    editor.commit();
                 }
+
+                Map<String,String> map=new HashMap<String, String>();
+                map.put("loginname",userNameValue);
+                //map.put("password",passwordValue);
+                try {
+                    map.put("password",encryption.sha1(mPassword.getText().toString()));
+
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+
+                net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                mSocket.emit("login",jsonObject);
+
+
+                mSocket.on("loginResult",loginListener);
+
+
             }
         });
+
     }
+
+
+    private Emitter.Listener loginListener = new Emitter.Listener() {
+
+        int status;
+        String msg;
+        @Override
+        public void call(Object... args) {
+            //主线程调用
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    JSONObject data = null;
+                    try {
+                        data = new JSONObject((String)args[0]);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        status = data.getInt("status");
+                        msg = data.getString("msg");
+                        //Toast.makeText(LoginActivity.this,status+msg, Toast.LENGTH_SHORT).show();
+
+                        if(status == 200){
+
+                            Toast.makeText(LoginActivity.this,"登录成功", Toast.LENGTH_SHORT).show();
+
+                            //动画跳转
+                            // 计算出控件的高与宽
+                            mWidth = mBtnLogin.getMeasuredWidth();
+                            mHeight = mBtnLogin.getMeasuredHeight();
+
+                            // 隐藏输入框
+                            mName.setVisibility(View.INVISIBLE);
+                            mPsw.setVisibility(View.INVISIBLE);
+
+                            //跳转界面
+                            inputAnimator(mInputLayout, mWidth, mHeight);
+
+
+                        }
+                        else{
+
+                            Toast.makeText(LoginActivity.this,msg, Toast.LENGTH_SHORT).show();
+
+                        }
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+
+                }
+            });
+
+        }
+    };
+
 
 
     //重写点击事件
@@ -366,23 +414,11 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                         //跳转到主界面
                         Intent intent = new Intent(LoginActivity.this, MainTabActivity.class);
 
-                        //下次登录不跳转
-                        /*editorMain.putBoolean("main",true);
-                        editorMain.commit();*/
                         startActivity(intent);
 
-                        /*//监听点击
-                        Toast.makeText(LoginActivity.this, "登陆成功", Toast.LENGTH_SHORT).show();*/
                     }
                 };
 
-                new Thread(){
-                    @Override
-                    public void run(){
-                        Intent start = new Intent(LoginActivity.this, webSocketService.class);
-                        startService(start);
-                    }
-                };
                 Timer timer = new Timer();
                 timer.schedule(task, 2000);//3秒后执行TimeTask的run方法
 
@@ -397,7 +433,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                 };
                 Timer timer1 = new Timer();
                 timer1.schedule(task1, 2000);//3秒后执行TimeTask的run方法
-
             }
 
             @Override
@@ -427,4 +462,9 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         startAnim();
 
     }
+
+
+
+
+
 }

@@ -1,6 +1,7 @@
 package com.jack.isafety;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import android.view.View;
 import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.maintabs_d_secondpages.HelpActivity;
 
 public class NoticeActivity extends AppCompatActivity {
 
@@ -71,8 +74,8 @@ public class NoticeActivity extends AppCompatActivity {
         Notice_7.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(NoticeActivity.this, "正在策划", Toast.LENGTH_SHORT).show();
-
+                Intent intent= new Intent(NoticeActivity.this,HelpActivity.class  );
+                startActivity(intent);
             }
         });
         Notice_8.setOnClickListener(new View.OnClickListener() {

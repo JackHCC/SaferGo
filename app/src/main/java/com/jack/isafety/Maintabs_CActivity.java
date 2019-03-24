@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import es.dmoral.toasty.Toasty;
+
 public class  Maintabs_CActivity extends AppCompatActivity {
 
 
@@ -85,7 +87,7 @@ public class  Maintabs_CActivity extends AppCompatActivity {
                  * 当MarqueeView有子View时，mView：当前显示的子View，mData：mView所填充的数据，mPosition：mView的索引
                  * 当MarqueeView无子View时，mView：null，mData：null，mPosition：－1
                  */
-                //Toast.makeText(Maintabs_CActivity.this, String.format("mPosition:%s,mData:%s,mView:%s,.", mPosition, mData, mView), Toast.LENGTH_SHORT).show();
+                Toast.makeText(Maintabs_CActivity.this, "暂无通知", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -252,11 +254,11 @@ public class  Maintabs_CActivity extends AppCompatActivity {
                     break;
                 case R.id.miantabs_c_body_body_show:
                     //intent=new Intent(Maintabs_CActivity.this,com.maintabs_secondpages.Maintabs_c_plane.class);
-                    Toast.makeText(Maintabs_CActivity.this, "尽请期待", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Maintabs_CActivity.this,"尽请期待", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.miantabs_c_body_body_show2:
                     //intent=new Intent(Maintabs_CActivity.this,com.maintabs_secondpages.Maintabs_c_plane.class);
-                    Toast.makeText(Maintabs_CActivity.this, "更多精彩", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Maintabs_CActivity.this,"更多精彩", Toast.LENGTH_SHORT).show();
                     break;
             }
 

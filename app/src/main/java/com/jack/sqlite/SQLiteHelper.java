@@ -24,6 +24,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
          * **/
         db.execSQL("CREATE TABLE IF NOT EXISTS " + U_USER_INFO + "( "
                 + "_id  INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "id VARCHAR,"
+                + "email VARCHAR,"
                 + "userName VARCHAR, "
                 + "phone VARCHAR, "
                 + "sex VARCHAR, "

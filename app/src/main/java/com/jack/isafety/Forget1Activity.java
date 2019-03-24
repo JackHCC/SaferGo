@@ -15,10 +15,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import xin.skingorz.isafety.Login;
+/*import xin.skingorz.isafety.Login;
 import xin.skingorz.isafety.checkFindPwdCode;
 import xin.skingorz.isafety.returnMsg;
-import xin.skingorz.isafety.sendFindPwdEmail;
+import xin.skingorz.isafety.sendFindPwdEmail;*/
 
 public class Forget1Activity extends AppCompatActivity {
 
@@ -41,7 +41,7 @@ public class Forget1Activity extends AppCompatActivity {
 
                 Toast.makeText(Forget1Activity.this, "已点击", Toast.LENGTH_SHORT).show();
                 //声明
-                Callable<returnMsg> callable = new sendFindPwdEmail(mEmail.getText().toString());
+/*                Callable<returnMsg> callable = new sendFindPwdEmail(mEmail.getText().toString());
                 FutureTask<returnMsg> futureTask = new FutureTask<returnMsg>(callable);
                 new Thread(futureTask).start();
                 while (!futureTask.isDone()) {
@@ -58,7 +58,7 @@ public class Forget1Activity extends AppCompatActivity {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
         });
 
@@ -70,7 +70,7 @@ public class Forget1Activity extends AppCompatActivity {
             public void onClick(View v) {
 
                 //声明
-                Callable<returnMsg> callable = new checkFindPwdCode(mEmail.getText().toString(),mNumber.getText().toString());
+/*                Callable<returnMsg> callable = new checkFindPwdCode(mEmail.getText().toString(),mNumber.getText().toString());
                 FutureTask<returnMsg> futureTask = new FutureTask<returnMsg>(callable);
                 new Thread(futureTask).start();
                 while (!futureTask.isDone()) {
@@ -111,7 +111,7 @@ public class Forget1Activity extends AppCompatActivity {
                 } else {
 
                     Toast.makeText(Forget1Activity.this, returnMsg.getMsg(), Toast.LENGTH_SHORT).show();
-                }
+                }*/
 
 
 

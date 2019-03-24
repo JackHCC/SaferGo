@@ -11,6 +11,8 @@ import android.widget.Toast;
 
 import com.jack.isafety.R;
 
+import es.dmoral.toasty.Toasty;
+
 
 public class Maintabs_c_subway extends AppCompatActivity {
 
@@ -39,7 +41,8 @@ public class Maintabs_c_subway extends AppCompatActivity {
         Header_Show.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(Maintabs_c_subway.this, "更多精彩", Toast.LENGTH_SHORT).show();
+                Toasty.info(Maintabs_c_subway.this, "更多精彩", Toast.LENGTH_SHORT, true).show();
+
             }
         });
 

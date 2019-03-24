@@ -1,6 +1,7 @@
 package com.maintabs_secondpages;
 
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,24 +9,37 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.jack.isafety.R;
+import com.jack.sqlite.UserBean;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import xin.skingorz.isafety.FindUser;
-import xin.skingorz.isafety.GlobalVariable;
-import xin.skingorz.isafety.User;
-import xin.skingorz.isafety.addFriend;
-import xin.skingorz.isafety.returnMsg;
-import xin.skingorz.isafety.sendCode;
+import java.util.HashMap;
+import java.util.Map;
+
+import io.socket.emitter.Emitter;
+import xin.skingorz.internet.Friend;
+import xin.skingorz.internet.Search;
+
+import static com.jack.service.BaseService.mSocket;
+import static com.jack.sqlite.UserBean.home;
+import static com.jack.sqlite.UserBean.location;
+import static com.jack.sqlite.UserBean.phone;
+import static com.jack.sqlite.UserBean.sex;
+import static com.jack.sqlite.UserBean.signature;
+import static com.jack.sqlite.UserBean.userName;
+
 
 public class Maintabs_a_adduser extends AppCompatActivity {
 
     private EditText mSearchView;
 
-    private User findUser;
+    private Friend friend=new Friend();
+
+    private Search search=new Search();
 
     private TextView mSearchName;
 
@@ -48,106 +62,89 @@ public class Maintabs_a_adduser extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Callable<User> callable = new FindUser(mSearchView.getText().toString());
+                Map<String,String> map=new HashMap<String, String>();
+                map.put("search",mSearchView.getText().toString());
 
-                FutureTask<User> futureTask = new FutureTask<User>(callable);
-                new Thread(futureTask).start();
-                while (!futureTask.isDone()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
-                    findUser = futureTask.get();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
 
-                if(findUser.getUsername()==null&&findUser.getEmail()==null){
-                    mSearchName.setText("无此用户");
-                }
-                else{
+                mSocket.emit("getInfor",jsonObject);
 
-                    mSearchName.setText(findUser.getUsername());
-                }
+
 
             }
         });
+
+        mSocket.on("searchResult",getInformation);
 
 
         mSearchName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                User user = (User) GlobalVariable.cache.getDataFromMemotyCache("user");
-                Log.i("emails", user.getEmail());
-                Callable<returnMsg> callable = new addFriend(user.getEmail(), findUser.getEmail());
-                FutureTask<returnMsg> futureTask = new FutureTask<returnMsg>(callable);
-                new Thread(futureTask).start();
-                while (!futureTask.isDone()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
-                    returnMsg returnMsg = futureTask.get();
-                    Log.i("returnMsg", returnMsg.getMsg());
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
+                Map<String,String> map=new HashMap<String, String>();
+                map.put("friend",mSearchView.getText().toString());
+
+                net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                mSocket.emit("AddFriend",jsonObject);
+
+                //mSocket.on("addFriendResult",Listener);
 
                 onBackPressed();
+
             }
         });
-
-        //String mFindUsername=findUser.getUsername().toString();
-
-        /*mSearchName.setText(mSearchContent);*/
-
-      /*  lListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(Maintabs_a_adduser.this, "dianji", Toast.LENGTH_SHORT).show();
-            }
-        });*/
-
-        //final String mSearchContent=mSearchView.getQuery().toString();
-
-        // 设置搜索文本监听
-       /* mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            // 当点击搜索按钮时触发该方法
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-
-
-               // Callable<User> callable = new FindUser(mSearchContent);
-
-                //mSearchName.setText(findUser.getUsername().toString());
-
-                return false;
-            }
-
-            // 当搜索内容改变时触发该方法
-            @Override
-            public boolean onQueryTextChange(String newText) {
-
-
-                if (!TextUtils.isEmpty(newText)){
-                    lListView.setFilterText(newText);
-                }else{
-                    lListView.clearTextFilter();
-                }
-                return false;
-            }
-        });
-*/
 
     }
+
+
+    private Emitter.Listener getInformation = new Emitter.Listener() {
+
+        @Override
+        public void call(Object... args) {
+            //主线程调用
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    JSONObject data = null;
+                    try {
+                        data = new JSONObject((String)args[0]);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    String[] Listview_item_email = new String[20];
+
+
+                    try {
+                        UserBean.Friend= data.getJSONArray("friend");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    mSearchName.setText(mSearchView.getText().toString());
+
+                    for(int i=0;i< UserBean.Friend.length()-1;i++){
+
+                        try {
+                            Listview_item_email[i]= ((JSONObject) UserBean.Friend.get(i)).getString("friends_email");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        if(Listview_item_email[i]==""){
+                            //Friend[i] = data.getString("username");
+
+
+
+                            break;
+                        }
+                    }
+
+                }
+            });
+        }
+    };
 }

@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao'
 
 android {
     signingConfigs {
@@ -73,6 +74,16 @@ dependencies {
 
     implementation 'com.gongwen:marqueelibrary:1.1.3' //跑马灯
 
+    implementation 'com.github.GrenderG:Toasty:1.4.0'//Toast
+
+    implementation 'org.greenrobot:greendao:3.2.2'
+
+    implementation files('libs/json-lib-2.3-jdk15.jar')
+    implementation files('libs/commons-beanutils-1.8.0.jar')
+    implementation files('libs/commons-collections-3.2.1.jar')
+    implementation files('libs/commons-lang-2.5.jar')
+    implementation files('libs/ezmorph-1.0.6.jar')
+    implementation files('libs/commons-logging-1.1.1.jar')
 
 
 }

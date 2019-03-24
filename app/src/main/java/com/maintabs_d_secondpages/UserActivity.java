@@ -1,6 +1,7 @@
 package com.maintabs_d_secondpages;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
@@ -12,20 +13,36 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import com.jack.isafety.LoginActivity;
 import com.jack.isafety.R;
 import com.jack.specialEffects.StringUtils;
 import com.jack.sqlite.DBUtils;
 import com.jack.sqlite.UserBean;
 
 
-import xin.skingorz.isafety.GlobalVariable;
-import xin.skingorz.isafety.User;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import io.socket.emitter.Emitter;
+import xin.skingorz.internet.Search;
+
+import static com.jack.service.BaseService.mSocket;
 import static com.jack.sqlite.Constants.userGender;
 import static com.jack.sqlite.Constants.userHome;
 import static com.jack.sqlite.Constants.userPhone;
 import static com.jack.sqlite.Constants.userLocation;
 import static com.jack.sqlite.Constants.userTag;
+import static com.jack.sqlite.UserBean.email;
+import static com.jack.sqlite.UserBean.home;
+import static com.jack.sqlite.UserBean.id;
+import static com.jack.sqlite.UserBean.location;
+import static com.jack.sqlite.UserBean.sex;
+import static com.jack.sqlite.UserBean.signature;
+import static com.jack.sqlite.UserBean.userName;
+import static com.jack.sqlite.UserBean.phone;
 
 public class UserActivity extends AppCompatActivity {
 
@@ -38,13 +55,12 @@ public class UserActivity extends AppCompatActivity {
 
 
     //设置昵称邮箱
-    User user= (User) GlobalVariable.cache.getDataFromMemotyCache("user");
+    private String spUserName=id;
+    private String rUsername=userName;
 
-    String rUsername=user.getUsername();
-    String rUseremail=user.getEmail();
+    public UserActivity() throws InterruptedException, JSONException {
+    }
 
-
-    private String spUserName=rUsername;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,8 +75,59 @@ public class UserActivity extends AppCompatActivity {
         mContext = this;
 
 
+        Map<String,String> map=new HashMap<String, String>();
+        map.put("search",userName);
+
+        net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+        mSocket.emit("getInfor",jsonObject);
+
+        mSocket.on("searchResult",getInformation);
 
     }
+
+
+    private Emitter.Listener getInformation = new Emitter.Listener() {
+
+
+        @Override
+        public void call(Object... args) {
+            //主线程调用
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    JSONObject data = null;
+                    try {
+                        data = new JSONObject((String)args[0]);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    try {
+                        sex = data.getString("sex");
+                        phone = data.getString("mobilePhone");
+                        home = data.getString("birthplace");
+                        location = data.getString("livePlace");
+                        signature = data.getString("individuality");
+
+                        mUser_tag.setText(signature);
+                        mUser_phone.setText(phone);
+                        mUser_home.setText(home);
+                        mUser_gender.setText(sex);
+                        mUser_location.setText(location);
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
+
+
 
     //初始化数据
     private void initDate() {
@@ -71,11 +138,17 @@ public class UserActivity extends AppCompatActivity {
         if (bean == null) {
             bean = new UserBean();
             bean.userName = rUsername;
-            bean.phone = "***********";
+            //userName = rUsername;
+            /*bean.phone = "***********";
             bean.sex = "男";
             bean.signature = "暂未设置";
             bean.home = "北京";
-            bean.location = "北京";
+            bean.location = "北京";*/
+            bean.phone = phone;
+            bean.sex = sex;
+            bean.signature = signature;
+            bean.home = home;
+            bean.location = location;
             //保存到数据库
             DBUtils.getInstance(this).saveUserInfo(bean);
         }
@@ -88,12 +161,13 @@ public class UserActivity extends AppCompatActivity {
     private void setValue(UserBean bean) {
         mUsername.setText(rUsername);
         mTopName.setText(rUsername);
-        mUseremail.setText(rUseremail);
-        mUser_tag.setText(bean.signature);
+        mUseremail.setText(email);
+
+        /*mUser_tag.setText(bean.signature);
         mUser_phone.setText(bean.phone);
         mUser_home.setText(bean.home);
         mUser_gender.setText(bean.sex);
-        mUser_location.setText(bean.location);
+        mUser_location.setText(bean.location);*/
     }
 
     //初始化
@@ -125,6 +199,7 @@ public class UserActivity extends AppCompatActivity {
         User_more=findViewById(R.id.maintabs_d_user_more);
 
     }
+
 
 
     //点击跳转
@@ -200,6 +275,12 @@ public class UserActivity extends AppCompatActivity {
                     //currentUser.setGender(text.toString());
                     //doUpdate();
                     /*上传数据库*/
+                    Map<String,String> map=new HashMap<String, String>();
+                    map.put("sex",text.toString());
+
+                    net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                    mSocket.emit("SetInfor",jsonObject);
                     userGender=text.toString();
                     //mUser_gender.setText(userGender);
                     setSex(userGender);
@@ -238,6 +319,13 @@ public class UserActivity extends AppCompatActivity {
                             //phoneCL.setRightText(inputStr);
                             //doUpdate();
                             /*设置上传服务器*/
+
+                            Map<String,String> map=new HashMap<String, String>();
+                            map.put("mobilePhone",inputStr);
+
+                            net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                            mSocket.emit("SetInfor",jsonObject);
                             userPhone=inputStr;
                             //mUser_phone.setText(userPhone);
                             setPhone(userPhone);
@@ -281,6 +369,13 @@ public class UserActivity extends AppCompatActivity {
                         //phoneCL.setRightText(inputStr);
                         //doUpdate();
                         /*设置上传服务器*/
+                        Map<String,String> map=new HashMap<String, String>();
+                        map.put("birthplace",inputStr);
+
+                        net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                        mSocket.emit("SetInfor",jsonObject);
+
                         userHome=inputStr;
                         //mUser_home.setText(userHome);
                         setHome(userHome);
@@ -320,6 +415,12 @@ public class UserActivity extends AppCompatActivity {
                         //phoneCL.setRightText(inputStr);
                         //doUpdate();
                         /*设置上传服务器*/
+                        Map<String,String> map=new HashMap<String, String>();
+                        map.put("livePlace",inputStr);
+
+                        net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                        mSocket.emit("SetInfor",jsonObject);
                         userLocation=inputStr;
                         //mUser_location.setText(userLocation);
                         setLocaton(userLocation);
@@ -358,6 +459,12 @@ public class UserActivity extends AppCompatActivity {
                         //phoneCL.setRightText(inputStr);
                         //doUpdate();
                         /*设置上传服务器*/
+                        Map<String,String> map=new HashMap<String, String>();
+                        map.put("individuality",inputStr);
+
+                        net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(map);
+
+                        mSocket.emit("SetInfor",jsonObject);
                         userTag=inputStr;
                         //mUser_tag.setText(userTag);
                         setTag(userTag);

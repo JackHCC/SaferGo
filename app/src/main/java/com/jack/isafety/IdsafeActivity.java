@@ -10,8 +10,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import xin.skingorz.isafety.GlobalVariable;
-import xin.skingorz.isafety.User;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import xin.skingorz.Bean.User;
+import xin.skingorz.internet.Search;
+import xin.skingorz.utils.GlobalVariable;
+
+import static com.jack.sqlite.UserBean.email;
+import static com.jack.sqlite.UserBean.userName;
 
 public class IdsafeActivity extends AppCompatActivity {
 
@@ -58,13 +65,8 @@ public class IdsafeActivity extends AppCompatActivity {
         mUsername=findViewById(R.id.idsafe_username);
         mUseremail=findViewById(R.id.idsafe_email);
 
-        User user= (User) GlobalVariable.cache.getDataFromMemotyCache("user");
-
-        String rUsername=user.getUsername();
-        String rUseremail=user.getEmail();
-
-        mUsername.setText(rUsername);
-        mUseremail.setText(rUseremail);
+        mUsername.setText(userName);
+        mUseremail.setText(email);
 
 
         findViewById(R.id.idsafe_face).setOnClickListener(new View.OnClickListener() {
@@ -77,7 +79,7 @@ public class IdsafeActivity extends AppCompatActivity {
         findViewById(R.id.idsafe_password).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(IdsafeActivity.this, "尽请期待", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(IdsafeActivity.this, "尽请期待", Toast.LENGTH_SHORT).show();
             }
         });
 

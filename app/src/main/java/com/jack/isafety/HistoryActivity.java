@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import es.dmoral.toasty.Toasty;
+
 public class HistoryActivity extends AppCompatActivity {
 
     @Override
@@ -24,7 +26,8 @@ public class HistoryActivity extends AppCompatActivity {
         findViewById(R.id.history_clear).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(HistoryActivity.this, "清除成功", Toast.LENGTH_SHORT).show();
+                Toasty.success(HistoryActivity.this, "清除成功!", Toast.LENGTH_SHORT, true).show();
+
             }
         });
 
@@ -32,14 +35,14 @@ public class HistoryActivity extends AppCompatActivity {
         //listview_item的添加
         //素材数组的构建
         int[] Listview_item_logo=new int[]{
-                R.mipmap.isafety
+                R.mipmap.safergo
         };
 
         String[] Listview_item_title=new String[]{
                 "时时守护"
         };
         String[] Listview_item_time=new String[]{
-                "2018-9-1"
+                "2019-03-01"
         };
         String[] Listview_item_id=new String[]{
                 "SaferGo"
@@ -66,7 +69,9 @@ public class HistoryActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Map<String,Object> map= (Map<String, Object>) parent.getItemAtPosition(position);
-                Toast.makeText(HistoryActivity.this, map.get("main_listview_item_id").toString()+"在"+map.get("main_listview_item_time").toString()+"守护了您", Toast.LENGTH_SHORT).show();
+
+                Toasty.success(HistoryActivity.this, map.get("main_listview_item_id").toString()+"在"+map.get("main_listview_item_time").toString()+"守护了您", Toast.LENGTH_SHORT, true).show();
+
             }
         });
 

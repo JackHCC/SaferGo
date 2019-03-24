@@ -12,19 +12,28 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jack.specialEffects.StringUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import xin.skingorz.isafety.Login;
-import xin.skingorz.isafety.Register;
-import xin.skingorz.isafety.returnMsg;
-import xin.skingorz.isafety.sendCode;
+import xin.skingorz.internet.Register;
+
 
 public class RegisterActivity extends Activity {
 
     private EditText mEmail, mNumber, mUsername, mPassword, mPassagain;
+
+
+    Register register=new Register();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,24 +78,17 @@ public class RegisterActivity extends Activity {
 
                 Toast.makeText(RegisterActivity.this, "已点击", Toast.LENGTH_SHORT).show();
 
-                Callable<returnMsg> callable = new sendCode(mEmail.getText().toString());
-                FutureTask<returnMsg> futureTask = new FutureTask<returnMsg>(callable);
-                new Thread(futureTask).start();
-                while (!futureTask.isDone()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
                 try {
-                    returnMsg returnMsg = futureTask.get();
-                    Log.i("returnMsg", returnMsg.getMsg());
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
+                    JSONObject jsonObject=register.get_code(mEmail.getText().toString());
+
+                    Toast.makeText(RegisterActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+
             }
         });
 
@@ -96,59 +98,30 @@ public class RegisterActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-
-
-                Callable<returnMsg> callable = null;
                 try {
-                    callable = new Register(mEmail.getText().toString(), mNumber.getText().toString(), mUsername.getText().toString(), mPassword.getText().toString(), mPassagain.getText().toString());
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-                FutureTask<returnMsg> futureTask = new FutureTask<returnMsg>(callable);
-                new Thread(futureTask).start();
-                while (!futureTask.isDone()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
-                    returnMsg returnMsg = futureTask.get();
-                    Log.i("returnMsg", returnMsg.getMsg());
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
 
-                if (returnMsg.getStatus() == 200) {
-
-                    /*//数据传输
-                    String bEmail=(findViewById(R.id.register_register_email)).getContext().toString();
-                    String bUsername=(findViewById(R.id.register_register_username)).getContext().toString();
-                    if(!"".equals(bEmail)&&!"".equals(bUsername))
-                    {
-                        Intent intent=new Intent(RegisterActivity.this,Maintabs_DActivity.class);
-                        Bundle bundle=new Bundle();
-                        bundle.putCharSequence("email",bEmail);
-                        bundle.putCharSequence("username",bUsername);
-
-                        intent.putExtras(bundle);
-
+                    if(StringUtils.checkPhoneNumber(mUsername.getText().toString())||StringUtils.checkEmail(mUsername.getText().toString())){
+                        Toast.makeText(RegisterActivity.this, "用户名不能为邮箱或手机号，请重新命名", Toast.LENGTH_SHORT).show();
 
                     }else{
-                        Toast.makeText(RegisterActivity.this, "请输入邮箱", Toast.LENGTH_SHORT).show();
-                    }*/
+                        //注册
+                        JSONObject jsonobject = register.add_user(mEmail.getText().toString(),mNumber.getText().toString(),mUsername.getText().toString(),mPassword.getText().toString(),mPassagain.getText().toString());
 
-                    //跳转到登录页面
-                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
-                } else {
+                        Toast.makeText(RegisterActivity.this, jsonobject.getString("msg"), Toast.LENGTH_SHORT).show();
 
-                    Toast.makeText(RegisterActivity.this, returnMsg.getMsg(), Toast.LENGTH_SHORT).show();
+                        onBackPressed();
+                    }
+
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+
+
+
+
 
             }
         });

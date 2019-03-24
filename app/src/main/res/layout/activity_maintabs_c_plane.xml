@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.maintabs_secondpages.Maintabs_c_plane"
@@ -13,19 +11,21 @@
     android:paddingBottom="3dp"
     android:paddingTop="5dp">
 
-    <!--标题-->
-    <TextView
+
+    <!--搜索框-->
+    <com.arlib.floatingsearchview.FloatingSearchView
         android:id="@+id/maintabs_c_plane_title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="20sp"
-        android:layout_margin="1dp"
-        android:textColor="@color/colorPrimary"
-        android:background="#00000000"
-        android:gravity="center"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"/>
+        android:layout_height="54dp"
+        app:floatingSearch_searchBarMarginLeft="0dp"
+        app:floatingSearch_searchBarMarginTop="0dp"
+        app:floatingSearch_searchBarMarginRight="0dp"
+        app:floatingSearch_searchHint="Search..."
+        app:floatingSearch_suggestionsListAnimDuration="250"
+        app:floatingSearch_showSearchKey="false"
+        app:floatingSearch_leftActionMode="showHamburger"
+        app:floatingSearch_menu="@menu/menu_search"
+        app:floatingSearch_close_search_on_keyboard_dismiss="true"/>
 
 
     <!--头部快捷功能-->
@@ -200,13 +200,14 @@
             android:textColor="@color/main_color_warm" />
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/maintabs_c_plene_imageshow"
+    <com.jack.specialEffects.DragZoomImageView
+        android:id="@+id/DragZoonImageView2"
         android:layout_width="match_parent"
         android:layout_height="320dp"
+        android:background="#a7a7a7"
+        android:layout_marginTop="1sp"
         android:layout_below="@+id/maintabs_c_plane_body_title"
-        android:background="@color/white"
-        android:layout_marginTop="1sp"/>
+        android:scaleType="matrix"
+        android:src="@drawable/maintabs_c_worldmap" />
 
 </RelativeLayout>
-</ScrollView>

@@ -1,12 +1,12 @@
 /**
  * 将字符串转换成哈希散列
  */
-package xin.skingorz.isafety;
+package xin.skingorz.utils;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class StringToHash {
+public class Encryption {
 
     /**
      * 将字符串转换为哈希散列

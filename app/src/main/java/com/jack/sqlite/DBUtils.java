@@ -5,9 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import xin.skingorz.isafety.User;
 
-import static android.database.sqlite.SQLiteDatabase.openDatabase;
 
 
 public class DBUtils {
@@ -40,6 +38,8 @@ public class DBUtils {
      **/
     public void saveUserInfo(UserBean bean) {
         ContentValues cv = new ContentValues();
+        cv.put("id", bean.id);
+        cv.put("email", bean.email);
         cv.put("userName", bean.userName);
         cv.put("phone", bean.phone);
         cv.put("sex", bean.sex);
@@ -68,6 +68,8 @@ public class DBUtils {
             bean = new UserBean();
             //根据列索引获取对应的数值，因为这里查询结果只有一个，我们也不需要对模型UserBean进行修改，
             //直接将对应用户名的所有数据从表中动态赋值给bean
+            bean.id = cursor.getString(cursor.getColumnIndex("id"));
+            bean.email = cursor.getString(cursor.getColumnIndex("email"));
             bean.userName = cursor.getString(cursor.getColumnIndex("userName"));
             bean.phone = cursor.getString(cursor.getColumnIndex("phone"));
             bean.sex = cursor.getString(cursor.getColumnIndex("sex"));

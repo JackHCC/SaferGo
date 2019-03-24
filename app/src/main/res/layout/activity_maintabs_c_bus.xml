@@ -15,18 +15,23 @@
     android:paddingTop="5dp">
 
     <!--标题-->
-    <TextView
+
+    <!--搜索框-->
+    <com.arlib.floatingsearchview.FloatingSearchView
         android:id="@+id/maintabs_c_bus_title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="北京市"
-        android:textSize="20sp"
-        android:layout_margin="1dp"
-        android:textColor="@color/colorPrimary"
-        android:background="#00000000"
-        android:paddingLeft="140dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"/>
+        android:layout_height="54dp"
+        app:floatingSearch_searchBarMarginLeft="0dp"
+        app:floatingSearch_searchBarMarginTop="0dp"
+        app:floatingSearch_searchBarMarginRight="0dp"
+        app:floatingSearch_searchHint="Search..."
+        app:floatingSearch_suggestionsListAnimDuration="250"
+        app:floatingSearch_showSearchKey="false"
+        app:floatingSearch_leftActionMode="showHamburger"
+        app:floatingSearch_menu="@menu/menu_search"
+        app:floatingSearch_close_search_on_keyboard_dismiss="true"/>
+
+
 
 
     <!--头部快捷功能-->
