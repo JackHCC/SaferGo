@@ -229,6 +229,7 @@ public class Maintabs_AActivity extends AppCompatActivity implements View.OnClic
         });
 
 
+
         /*mSocket.emit("GetFriend");
 
         mSocket.on("allFriends",FriendLister);
