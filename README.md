@@ -1,14 +1,22 @@
 # SaferGo
 Always with you
+[SaferGo](https://github.com/JackHCC/SaferGo)
 
-# SaferGo
 SaferGo官网：[SaferGo-Web](jackhcc.github.io/web-safergo/)
+
 [网站设计](jackhcc.github.io/web-safergo/)
 
 ## 设计
 - 针对滴滴出行安全
 - 2018年，针对滴滴安全问题，提出**实时定位守护**的概念
 - 具体详细说明参考官网说明[SaferGo-Web](jackhcc.github.io/web-safergo/)
+
+## 版本迭代
+iSafe(2018) -> SaferGo(2019)
+
+## 荣誉与说明
+- iSafe:2018华北五省暨港澳台大学生计算机应用大赛本科组一等奖
+- SaferGo:2019计算机设计大赛国赛一等奖
 
 ## 项目展示
 ### 视频演示
@@ -24,13 +32,6 @@ SaferGo官网：[SaferGo-Web](jackhcc.github.io/web-safergo/)
 ![消息页面](https://camo.githubusercontent.com/afa3c74434704021af3dcb5d00bf37b734bd556b414606984c83f02668b4eded/68747470733a2f2f692e6c6f6c692e6e65742f323032302f30332f30352f654c45634a6c445a373858645570682e6a7067)
 
 ![动态页面](https://camo.githubusercontent.com/8e9a07789143f2f4c9b41e12320f0c0f1fad25f7688544e6c52b7fbbbe90baa5/68747470733a2f2f692e6c6f6c692e6e65742f323032302f30332f30352f66317365687a4a4f55356d716a74702e6a7067)
-
-## 版本迭代
-iSafe(2018) -> SaferGo(2019)
-
-## 荣誉与说明
-- iSafe:2018华北五省暨港澳台大学生计算机应用大赛本科组一等奖
-- SaferGo:2019计算机设计大赛国赛一等奖
 
 ## 开发者
 + [@JackHCC](https://github.com/JackHCC) 
